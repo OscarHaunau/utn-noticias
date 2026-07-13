@@ -93,7 +93,8 @@ pnpm build
 
 ## Documentacion para la presentacion
 
+- `aspnet-core/docs/GUIA_PRESENTACION_TP_FINAL.md`: guion completo para presentar, demo, preguntas y respuestas.
 - `aspnet-core/docs/TP_BACKEND_RESUMEN.md`: resumen funcional para explicar el TP.
 - `aspnet-core/docs/RELACION_LIBRO_ASPNETCORE.md`: relacion con paginas del libro de Nate Barbettini.
 - `aspnet-core/docs/EJECUTAR_LOCAL_COMPLETO.md`: pasos para correr todo local.
-
+- `aspnet-core/docs/EJECUTAR_CON_SQL_SERVER.md`: pasos para correr con SQL Server en otras maquinas.
