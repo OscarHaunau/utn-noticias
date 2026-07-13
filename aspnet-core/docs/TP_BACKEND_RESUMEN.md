@@ -34,6 +34,23 @@ La solucion se hizo basica, separada en AppServices:
 
 Importante: `GetMyNotificationsAsync` no llama a NewsAPI. Solo lee datos ya guardados.
 
+## Ejecucion asincronica pedida por la catedra
+
+El punto del enunciado que dice:
+
+> "Ejecucion asincronica que busque los textos de las alertas en la API y persista la informacion de las notificaciones"
+
+queda cubierto con:
+
+```txt
+AlertAppService.RunAlertsAsync()
+```
+
+Lo llamamos "asincronico" porque el metodo usa `async` / `await` para esperar la API externa y la base de datos sin bloquear la aplicacion.
+
+No se agrego un proceso automatico con timer/background job para no complicar la entrega.
+La catedra pidio listar metodos de AppServices, entonces lo dejamos como metodo simple de AppService que se puede ejecutar desde Swagger.
+
 ## Monitoreo
 
 Cada busqueda guarda un `ApiAccessLog` con:
