@@ -1,0 +1,17 @@
+{
+  "culture": "en",
+  "texts": {
+    "Menu:Home": "Home",
+    "Welcome": "Welcome",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io.",
+    "Permission:ReadingLists": "Reading Lists",
+    "Permission:ReadingLists.Create": "Create Reading Lists",
+    "Permission:ReadingLists.Update": "Update Reading Lists",
+    "Permission:ReadingLists.Delete": "Delete Reading Lists",
+    "Permission:ReadingLists.AddItem": "Add Items To Reading Lists",
+    "UtnNoticias:ReadingListNameIsRequired": "Reading list name is required.",
+    "UtnNoticias:ReadingListItemTitleIsRequired": "Reading list item title is required.",
+    "UtnNoticias:ReadingListItemUrlIsRequired": "Reading list item URL is required.",
+    "UtnNoticias:ReadingListItemAlreadyExists": "The item already exists in this reading list."
+  }
+}

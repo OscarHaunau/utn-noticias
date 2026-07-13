@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <RootNamespace>UtnNoticias</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\UtnNoticias.Application\UtnNoticias.Application.csproj" />
+    <ProjectReference Include="..\UtnNoticias.Domain.Tests\UtnNoticias.Domain.Tests.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Theme\ThemeManager_Integration_Tests.cs" />
+  </ItemGroup>
+
+   <ItemGroup>
+    <Folder Include="Theme\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+  </ItemGroup>
+
+</Project>
