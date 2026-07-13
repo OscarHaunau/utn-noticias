@@ -97,15 +97,3 @@ pnpm build
 - `aspnet-core/docs/RELACION_LIBRO_ASPNETCORE.md`: relacion con paginas del libro de Nate Barbettini.
 - `aspnet-core/docs/EJECUTAR_LOCAL_COMPLETO.md`: pasos para correr todo local.
 
-## Relacion con el libro
-
-Se dejaron comentarios en codigo con referencias a paginas del libro **"El pequeno libro de ASP.NET Core"**:
-
-- servicios de aplicacion,
-- inyeccion de dependencias,
-- `async` / `await`,
-- Entity Framework Core,
-- LINQ,
-- pruebas automaticas.
-
-La idea es poder explicar que el TP usa conceptos basicos del libro, aunque el proyecto este en una version mas nueva de ASP.NET Core / ABP.
