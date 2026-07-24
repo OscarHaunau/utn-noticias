@@ -157,4 +157,28 @@ export class TpBackendClientService {
       ),
     );
   }
+
+  getMyNotifications(): Promise<NewsNotificationDto[]> {
+    return firstValueFrom(
+      this.rest.request<unknown, NewsNotificationDto[]>(
+        {
+          method: 'GET',
+          url: `${this.alertUrl}/my-notifications`,
+        },
+        { apiName: 'default' },
+      ),
+    );
+  }
+
+  runAlerts(): Promise<number> {
+    return firstValueFrom(
+      this.rest.request<unknown, number>(
+        {
+          method: 'POST',
+          url: `${this.alertUrl}/run-alerts`,
+        },
+        { apiName: 'default' },
+      ),
+    );
+  }
 }

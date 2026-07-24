@@ -17,6 +17,8 @@ describe('HomeComponent', () => {
     'deleteReadingList',
     'addItemToReadingList',
     'createNewsAlert',
+    'getMyNotifications',
+    'runAlerts',
   ]);
 
   beforeEach(
@@ -53,6 +55,8 @@ describe('HomeComponent', () => {
     mockTpBackendClient.deleteReadingList.calls.reset();
     mockTpBackendClient.addItemToReadingList.calls.reset();
     mockTpBackendClient.createNewsAlert.calls.reset();
+    mockTpBackendClient.getMyNotifications.calls.reset();
+    mockTpBackendClient.runAlerts.calls.reset();
     fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();
   });
@@ -274,5 +278,63 @@ describe('HomeComponent', () => {
 
     expect(mockTpBackendClient.createNewsAlert).not.toHaveBeenCalled();
     expect(fixture.componentInstance.alertErrorMessage).toContain('Ingresa un texto');
+  });
+
+  it('should load persisted notifications without running alerts', async () => {
+    isAuthenticated = true;
+    mockTpBackendClient.getMyNotifications.and.resolveTo([
+      {
+        id: 'notification-1',
+        alertId: 'alert-1',
+        title: 'Bitcoin sube',
+        url: 'https://example.test/bitcoin',
+        createdAt: '2026-07-24T12:00:00Z',
+        isRead: false,
+      },
+    ]);
+
+    await fixture.componentInstance.loadNotifications();
+
+    expect(mockTpBackendClient.getMyNotifications).toHaveBeenCalledTimes(1);
+    expect(mockTpBackendClient.runAlerts).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.notifications.length).toBe(1);
+    expect(fixture.componentInstance.notificationsStatusMessage).toContain('1');
+  });
+
+  it('should execute alerts and refresh persisted notifications', async () => {
+    isAuthenticated = true;
+    mockTpBackendClient.runAlerts.and.resolveTo(2);
+    mockTpBackendClient.getMyNotifications.and.resolveTo([
+      {
+        id: 'notification-1',
+        alertId: 'alert-1',
+        title: 'Bitcoin sube',
+        url: 'https://example.test/bitcoin',
+        createdAt: '2026-07-24T12:00:00Z',
+        isRead: false,
+      },
+      {
+        id: 'notification-2',
+        alertId: 'alert-1',
+        title: 'Bitcoin baja',
+        url: 'https://example.test/bitcoin-2',
+        createdAt: '2026-07-24T12:01:00Z',
+        isRead: false,
+      },
+    ]);
+
+    await fixture.componentInstance.runAlerts();
+
+    expect(mockTpBackendClient.runAlerts).toHaveBeenCalledTimes(1);
+    expect(mockTpBackendClient.getMyNotifications).toHaveBeenCalledTimes(1);
+    expect(fixture.componentInstance.notifications.length).toBe(2);
+    expect(fixture.componentInstance.notificationsStatusMessage).toContain('2');
+  });
+
+  it('should not load notifications without an authenticated user', async () => {
+    await fixture.componentInstance.loadNotifications();
+
+    expect(mockTpBackendClient.getMyNotifications).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.notificationsErrorMessage).toContain('Inicia sesion');
   });
 });

@@ -11,9 +11,15 @@
       Iniciar sesion
     </button>
 
-    <span *ngIf="hasLoggedIn" class="badge rounded-pill text-bg-success">
-      Sesion activa
-    </span>
+    <div *ngIf="hasLoggedIn" class="d-flex align-items-center gap-2">
+      <span class="badge rounded-pill text-bg-success">
+        Sesion activa
+      </span>
+      <span class="badge rounded-pill text-bg-secondary" aria-label="Notificaciones visibles">
+        <i class="fa fa-bell" aria-hidden="true"></i>
+        {{ notifications.length }}
+      </span>
+    </div>
   </header>
 
   <section class="tp-section mt-3">
@@ -279,6 +285,77 @@
             {{ alert.notifications?.length || 0 }} notificacion(es)
           </span>
         </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="tp-section mt-3">
+    <div class="section-heading">
+      <div>
+        <span class="tp-kicker">Notificaciones</span>
+        <h2>Area de notificacion</h2>
+      </div>
+      <span class="badge text-bg-light">Requisitos 6 y 7</span>
+    </div>
+
+    <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
+      Inicia sesion para consultar notificaciones y ejecutar alertas.
+    </div>
+
+    <div *ngIf="hasLoggedIn" class="d-flex flex-wrap gap-2 my-3">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        (click)="loadNotifications()"
+        [disabled]="isLoadingNotifications || isRunningAlerts"
+      >
+        <i class="fa fa-rotate" aria-hidden="true"></i>
+        {{ isLoadingNotifications ? 'Consultando...' : 'Consultar persistidas' }}
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="runAlerts()"
+        [disabled]="isRunningAlerts || isLoadingNotifications"
+      >
+        <i class="fa fa-play" aria-hidden="true"></i>
+        {{ isRunningAlerts ? 'Ejecutando...' : 'Ejecutar alertas' }}
+      </button>
+    </div>
+
+    <div *ngIf="notificationsStatusMessage" class="alert alert-success" role="status">
+      {{ notificationsStatusMessage }}
+    </div>
+    <div *ngIf="notificationsErrorMessage" class="alert alert-danger" role="alert">
+      {{ notificationsErrorMessage }}
+    </div>
+
+    <div *ngIf="hasLoggedIn && !notifications.length" class="empty-state">
+      <i class="fa fa-bell" aria-hidden="true"></i>
+      No hay notificaciones persistidas.
+    </div>
+
+    <div *ngIf="hasLoggedIn && notifications.length" class="d-grid gap-2">
+      <article *ngFor="let notification of notifications; trackBy: trackNotification" class="border rounded p-3">
+        <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
+          <div>
+            <h3 class="h6 mb-1">{{ notification.title || 'Notificacion sin titulo' }}</h3>
+            <p class="mb-0 text-muted">
+              {{ notification.createdAt | date : 'short' }}
+              <span *ngIf="notification.alertId"> - alerta {{ notification.alertId }}</span>
+            </p>
+          </div>
+
+          <span class="badge" [ngClass]="notification.isRead ? 'text-bg-secondary' : 'text-bg-primary'">
+            {{ notification.isRead ? 'Leida' : 'No leida' }}
+          </span>
+        </div>
+
+        <a *ngIf="notification.url" class="btn btn-outline-secondary btn-sm mt-3" [href]="notification.url" target="_blank">
+          <i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i>
+          Abrir enlace
+        </a>
       </article>
     </div>
   </section>

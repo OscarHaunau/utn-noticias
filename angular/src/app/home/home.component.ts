@@ -4,6 +4,7 @@ import {
   AddReadingListItemDto,
   NewsAlertDto,
   NewsDto,
+  NewsNotificationDto,
   ReadingListDto,
   TpBackendClientService,
 } from './tp-backend-client.service';
@@ -37,6 +38,11 @@ export class HomeComponent implements OnInit {
   isCreatingAlert = false;
   alertStatusMessage = '';
   alertErrorMessage = '';
+  notifications: NewsNotificationDto[] = [];
+  isLoadingNotifications = false;
+  isRunningAlerts = false;
+  notificationsStatusMessage = '';
+  notificationsErrorMessage = '';
 
   get hasLoggedIn(): boolean {
     return this.authService.isAuthenticated;
@@ -47,6 +53,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     if (this.hasLoggedIn) {
       void this.loadReadingLists();
+      void this.loadNotifications();
     }
   }
 
@@ -91,6 +98,10 @@ export class HomeComponent implements OnInit {
 
   trackAlert(index: number, item: NewsAlertDto): string {
     return item.id || `${item.searchText}-${index}`;
+  }
+
+  trackNotification(index: number, item: NewsNotificationDto): string {
+    return item.id || item.url || `${item.title}-${index}`;
   }
 
   async loadReadingLists(): Promise<void> {
@@ -288,6 +299,43 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  async loadNotifications(): Promise<void> {
+    if (!this.ensureAuthenticatedForNotifications()) {
+      return;
+    }
+
+    this.isLoadingNotifications = true;
+    this.clearNotificationsMessages();
+
+    try {
+      await this.refreshNotifications();
+      this.notificationsStatusMessage = `Notificaciones persistidas: ${this.notifications.length}.`;
+    } catch (error) {
+      this.setNotificationsError(this.getErrorMessage(error));
+    } finally {
+      this.isLoadingNotifications = false;
+    }
+  }
+
+  async runAlerts(): Promise<void> {
+    if (!this.ensureAuthenticatedForNotifications()) {
+      return;
+    }
+
+    this.isRunningAlerts = true;
+    this.clearNotificationsMessages();
+
+    try {
+      const savedCount = await this.tpBackendClient.runAlerts();
+      await this.refreshNotifications();
+      this.notificationsStatusMessage = `Ejecucion finalizada: ${savedCount} notificacion(es) nueva(s) persistida(s).`;
+    } catch (error) {
+      this.setNotificationsError(this.getErrorMessage(error));
+    } finally {
+      this.isRunningAlerts = false;
+    }
+  }
+
   private setError(message: string): void {
     this.errorMessage = message;
     this.statusMessage = '';
@@ -313,6 +361,16 @@ export class HomeComponent implements OnInit {
     this.alertStatusMessage = '';
   }
 
+  private setNotificationsError(message: string): void {
+    this.notificationsErrorMessage = message;
+    this.notificationsStatusMessage = '';
+  }
+
+  private clearNotificationsMessages(): void {
+    this.notificationsErrorMessage = '';
+    this.notificationsStatusMessage = '';
+  }
+
   private ensureAuthenticatedForReadingLists(): boolean {
     if (this.hasLoggedIn) {
       return true;
@@ -328,6 +386,15 @@ export class HomeComponent implements OnInit {
     }
 
     this.setAlertError('Inicia sesion para crear alertas.');
+    return false;
+  }
+
+  private ensureAuthenticatedForNotifications(): boolean {
+    if (this.hasLoggedIn) {
+      return true;
+    }
+
+    this.setNotificationsError('Inicia sesion para consultar o ejecutar alertas.');
     return false;
   }
 
@@ -369,6 +436,10 @@ export class HomeComponent implements OnInit {
       ...alert,
       notifications: alert.notifications || [],
     };
+  }
+
+  private async refreshNotifications(): Promise<void> {
+    this.notifications = await this.tpBackendClient.getMyNotifications();
   }
 
   private toReadingListItemInput(news: NewsDto): AddReadingListItemDto {
