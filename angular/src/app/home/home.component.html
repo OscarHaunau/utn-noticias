@@ -16,7 +16,7 @@
     </span>
   </header>
 
-  <section class="tp-section">
+  <section class="tp-section mt-3">
     <div class="section-heading">
       <div>
         <span class="tp-kicker">NewsAPI</span>
@@ -43,6 +43,13 @@
       </div>
     </form>
 
+    <div *ngIf="newsResults.length" class="mb-3">
+      <button type="button" class="btn btn-outline-secondary" (click)="loadReadingLists()" [disabled]="!hasLoggedIn || isLoadingReadingLists">
+        <i class="fa fa-rotate" aria-hidden="true"></i>
+        {{ isLoadingReadingLists ? 'Actualizando...' : 'Actualizar listas' }}
+      </button>
+    </div>
+
     <div *ngIf="statusMessage" class="alert alert-success" role="status">{{ statusMessage }}</div>
     <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
 
@@ -65,12 +72,203 @@
             <span *ngIf="news.publishedAt"> - {{ news.publishedAt | date : 'short' }}</span>
           </p>
           <p>{{ news.description || news.content || 'Sin descripcion disponible.' }}</p>
-          <a *ngIf="news.url" class="btn btn-outline-secondary btn-sm mt-auto" [href]="news.url" target="_blank">
-            <i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i>
-            Abrir noticia
-          </a>
+          <div class="news-actions mt-auto">
+            <a *ngIf="news.url" class="btn btn-outline-secondary btn-sm" [href]="news.url" target="_blank">
+              <i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Abrir enlace
+            </a>
+            <button
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="openAddToListModal(news)"
+              [disabled]="!canAddNewsToReadingList(news)"
+            >
+              <i class="fa fa-bookmark" aria-hidden="true"></i>
+              {{ addingNewsUrl === news.url ? 'Guardando...' : 'Agregar a lista' }}
+            </button>
+          </div>
         </div>
       </article>
     </div>
   </section>
+
+  <section class="tp-section">
+    <div class="section-heading">
+      <div>
+        <span class="tp-kicker">Listas de lectura</span>
+        <h2>Gestion de listas</h2>
+      </div>
+      <span class="badge text-bg-light">Requisitos 2, 3 y 4</span>
+    </div>
+
+    <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
+      Inicia sesion para crear listas, editarlas y guardar noticias.
+    </div>
+
+    <form *ngIf="hasLoggedIn" class="reading-list-form" (ngSubmit)="createReadingList()">
+      <div>
+        <label class="form-label" for="newReadingListName">Nueva lista</label>
+        <input
+          id="newReadingListName"
+          name="newReadingListName"
+          class="form-control"
+          type="text"
+          [(ngModel)]="newReadingListName"
+          placeholder="Ej: Noticias para leer"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isCreatingReadingList">
+        <i class="fa fa-plus" aria-hidden="true"></i>
+        {{ isCreatingReadingList ? 'Creando...' : 'Crear lista' }}
+      </button>
+
+      <button type="button" class="btn btn-outline-secondary" (click)="loadReadingLists()" [disabled]="isLoadingReadingLists">
+        <i class="fa fa-rotate" aria-hidden="true"></i>
+        {{ isLoadingReadingLists ? 'Cargando...' : 'Cargar listas' }}
+      </button>
+    </form>
+
+    <div *ngIf="readingListStatusMessage" class="alert alert-success" role="status">
+      {{ readingListStatusMessage }}
+    </div>
+    <div *ngIf="readingListErrorMessage" class="alert alert-danger" role="alert">
+      {{ readingListErrorMessage }}
+    </div>
+
+    <div *ngIf="hasLoggedIn && !readingLists.length" class="empty-state">
+      <i class="fa fa-list" aria-hidden="true"></i>
+      No hay listas de lectura cargadas.
+    </div>
+
+    <div *ngIf="hasLoggedIn && readingLists.length" class="reading-list-grid">
+      <article
+        *ngFor="let list of readingLists; trackBy: trackReadingList"
+        class="reading-list-card"
+      >
+        <div class="reading-list-card-header">
+          <div *ngIf="editingReadingListId !== list.id">
+            <h3>{{ list.name }}</h3>
+            <p>{{ list.items?.length || 0 }} noticia(s)</p>
+          </div>
+
+          <div *ngIf="editingReadingListId === list.id" class="edit-name">
+            <label class="form-label" [for]="'edit-' + list.id">Nombre</label>
+            <input
+              [id]="'edit-' + list.id"
+              [name]="'editName-' + list.id"
+              class="form-control"
+              type="text"
+              [(ngModel)]="editingReadingListName"
+            />
+          </div>
+
+          <div class="list-actions">
+            <button
+              *ngIf="editingReadingListId !== list.id"
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              (click)="startEditingReadingList(list)"
+            >
+              <i class="fa fa-pen" aria-hidden="true"></i>
+              Editar
+            </button>
+
+            <button
+              *ngIf="editingReadingListId === list.id"
+              type="button"
+              class="btn btn-primary btn-sm"
+              (click)="updateReadingList(list)"
+              [disabled]="updatingReadingListId === list.id"
+            >
+              <i class="fa fa-floppy-disk" aria-hidden="true"></i>
+              {{ updatingReadingListId === list.id ? 'Guardando...' : 'Guardar' }}
+            </button>
+
+            <button
+              *ngIf="editingReadingListId === list.id"
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              (click)="cancelEditingReadingList()"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm"
+              (click)="deleteReadingList(list)"
+              [disabled]="deletingReadingListId === list.id"
+            >
+              <i class="fa fa-trash" aria-hidden="true"></i>
+              {{ deletingReadingListId === list.id ? 'Eliminando...' : 'Eliminar' }}
+            </button>
+          </div>
+        </div>
+
+        <ul *ngIf="list.items?.length" class="reading-list-items">
+          <li *ngFor="let item of list.items; trackBy: trackReadingListItem">
+            <a [href]="item.url" target="_blank">{{ item.title }}</a>
+            <span *ngIf="item.addedAt">{{ item.addedAt | date : 'short' }}</span>
+          </li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <div *ngIf="newsPendingToAdd" class="tp-modal-backdrop" role="presentation">
+    <section class="tp-modal" role="dialog" aria-modal="true" aria-labelledby="addToListTitle">
+      <header class="d-flex align-items-center justify-content-between gap-3">
+        <div>
+          <span class="tp-kicker">Listas de lectura</span>
+          <h2 id="addToListTitle">Agregar noticia a lista</h2>
+        </div>
+
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closeAddToListModal()">
+          Cerrar
+        </button>
+      </header>
+
+      <p class="fw-semibold my-3">{{ newsPendingToAdd.title }}</p>
+
+      <div *ngIf="!readingLists.length" class="empty-state">
+        <i class="fa fa-list" aria-hidden="true"></i>
+        No existen listas creadas.
+      </div>
+
+      <div *ngIf="readingLists.length" class="modal-form">
+        <label class="form-label" for="modalReadingList">Lista destino</label>
+        <select
+          id="modalReadingList"
+          name="modalReadingList"
+          class="form-select"
+          [(ngModel)]="selectedModalReadingListId"
+        >
+          <option value="">Seleccionar lista</option>
+          <option *ngFor="let list of readingLists; trackBy: trackReadingList" [value]="list.id">
+            {{ list.name }}
+          </option>
+        </select>
+      </div>
+
+      <div *ngIf="readingListErrorMessage" class="alert alert-danger" role="alert">
+        {{ readingListErrorMessage }}
+      </div>
+
+      <footer class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary" (click)="closeAddToListModal()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="confirmAddNewsToReadingList()"
+          [disabled]="!readingLists.length || addingNewsUrl === newsPendingToAdd.url"
+        >
+          <i class="fa fa-bookmark" aria-hidden="true"></i>
+          {{ addingNewsUrl === newsPendingToAdd.url ? 'Guardando...' : 'Agregar' }}
+        </button>
+      </footer>
+    </section>
+  </div>
 </main>
