@@ -32,6 +32,8 @@ namespace UtnNoticias.News
 			          $"&apiKey={apiKey}";
 
 			using var httpClient = new HttpClient();
+			httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("UtnNoticias/1.0");
+
 			using var response = await httpClient.GetAsync(url);
 			var json = await response.Content.ReadAsStringAsync();
 
