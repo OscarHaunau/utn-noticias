@@ -1,99 +1,80 @@
-import { CoreTestingModule } from "@abp/ng.core/testing";
-import { ThemeSharedTestingModule } from "@abp/ng.theme.shared/testing";
-import { ComponentFixture, TestBed, waitForAsync } from "@angular/core/testing";
-import { NgxValidateCoreModule } from "@ngx-validate/core";
-import { HomeComponent } from "./home.component";
-import { OAuthService } from 'angular-oauth2-oidc';
+import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '@abp/ng.core';
+import { HomeComponent } from './home.component';
+import { TpBackendClientService } from './tp-backend-client.service';
 
-
-
-describe("HomeComponent", () => {
+describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
-  const mockOAuthService = jasmine.createSpyObj('OAuthService', ['hasValidAccessToken'])
-  const mockAuthService = jasmine.createSpyObj('AuthService', ['navigateToLogin'])
+  let isAuthenticated = false;
+  const mockAuthService = jasmine.createSpyObj('AuthService', ['navigateToLogin']);
+  const mockTpBackendClient = jasmine.createSpyObj<TpBackendClientService>('TpBackendClientService', [
+    'searchNews',
+  ]);
+
   beforeEach(
     waitForAsync(() => {
+      Object.defineProperty(mockAuthService, 'isAuthenticated', {
+        configurable: true,
+        get: () => isAuthenticated,
+      });
+
       TestBed.configureTestingModule({
         declarations: [HomeComponent],
-        imports: [
-          CoreTestingModule.withConfig(),
-          ThemeSharedTestingModule.withConfig(),
-          NgxValidateCoreModule,
-        ],
+        imports: [CommonModule, FormsModule],
         providers: [
-          /* mock providers here */
-          {
-            provide: OAuthService,
-            useValue: mockOAuthService
-          },
           {
             provide: AuthService,
-            useValue: mockAuthService
-          }
+            useValue: mockAuthService,
+          },
+          {
+            provide: TpBackendClientService,
+            useValue: mockTpBackendClient,
+          },
         ],
       }).compileComponents();
-    })
+    }),
   );
 
   beforeEach(() => {
+    isAuthenticated = false;
+    mockAuthService.navigateToLogin.calls.reset();
+    mockTpBackendClient.searchNews.calls.reset();
     fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();
   });
 
-  it("should be initiated", () => {
+  it('should be initiated', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
+  it('should navigate to login', () => {
+    fixture.componentInstance.login();
 
+    expect(mockAuthService.navigateToLogin).toHaveBeenCalled();
+  });
 
-  describe('when login state is true', () => {
-    beforeAll(() => {
-      mockOAuthService.hasValidAccessToken.and.returnValue(true)
-    });
+  it('should call backend client when searching news', async () => {
+    mockTpBackendClient.searchNews.and.resolveTo([
+      {
+        title: 'Titulo',
+        url: 'https://example.test/news',
+      },
+    ]);
 
-    it("hasLoggedIn should be true", () => {
+    fixture.componentInstance.searchQuery = 'tecnologia';
+    await fixture.componentInstance.searchNews();
 
-      expect(fixture.componentInstance.hasLoggedIn).toBeTrue();
-      expect(mockOAuthService.hasValidAccessToken).toHaveBeenCalled()
-    })
+    expect(mockTpBackendClient.searchNews).toHaveBeenCalledOnceWith('tecnologia');
+    expect(fixture.componentInstance.newsResults.length).toBe(1);
+  });
 
-    it("button should not be exists", () => {
-      const element = fixture.nativeElement
-      const button = element.querySelector('[role="button"]')
-      expect(button).toBeNull()
-    })
+  it('should not call backend client with an empty query', async () => {
+    fixture.componentInstance.searchQuery = '   ';
+    await fixture.componentInstance.searchNews();
 
-  })
-
-  describe('when login state is false', () => {
-    beforeAll(() => {
-      mockOAuthService.hasValidAccessToken.and.returnValue(false)
-    });
-
-    it("hasLoggedIn should be false", () => {
-
-      expect(fixture.componentInstance.hasLoggedIn).toBeFalse();
-      expect(mockOAuthService.hasValidAccessToken).toHaveBeenCalled()
-    })
-
-    it("button should be exists", () => {
-      const element = fixture.nativeElement
-      const button = element.querySelector('[role="button"]')
-      expect(button).toBeDefined()
-    })
-    describe('when button clicked', () => {
-
-      beforeEach(() => {
-        const element = fixture.nativeElement
-        const button = element.querySelector('[role="button"]')
-        button.click()
-      });
-
-      it("navigateToLogin have been called", () => {
-        expect(mockAuthService.navigateToLogin).toHaveBeenCalled()
-      })
-    })
-  })
-
+    expect(mockTpBackendClient.searchNews).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.errorMessage).toContain('Ingresa un texto');
+  });
 });
