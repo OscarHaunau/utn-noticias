@@ -3,17 +3,17 @@
     <div>
       <span class="tp-kicker">Utn Noticias</span>
       <h1>Panel de prueba del TP</h1>
-      <p>Frontend minimo para consumir los AppServices existentes del backend.</p>
+      <p>Frontend para probar los AppServices existentes del backend.</p>
     </div>
 
     <button *ngIf="!hasLoggedIn" type="button" class="btn btn-primary" (click)="login()">
       <i class="fa fa-sign-in" aria-hidden="true"></i>
-      Iniciar sesion
+      Iniciar sesión
     </button>
 
     <div *ngIf="hasLoggedIn" class="d-flex align-items-center gap-2">
       <span class="badge rounded-pill text-bg-success">
-        Sesion activa
+        Sesión activa
       </span>
       <span class="badge rounded-pill text-bg-secondary" aria-label="Notificaciones visibles">
         <i class="fa fa-bell" aria-hidden="true"></i>
@@ -26,13 +26,13 @@
     <div class="section-heading">
       <div>
         <span class="tp-kicker">NewsAPI</span>
-        <h2>Busqueda de noticias</h2>
+        <h2>Búsqueda de noticias</h2>
       </div>
       <span class="badge text-bg-light">Requisito 1</span>
     </div>
 
     <form class="search-form" (ngSubmit)="searchNews()">
-      <label class="form-label" for="searchQuery">Texto de busqueda</label>
+      <label class="form-label" for="searchQuery">Texto de búsqueda</label>
       <div class="input-group">
         <input
           id="searchQuery"
@@ -72,12 +72,12 @@
         </div>
 
         <div class="news-body">
-          <h3>{{ news.title || 'Sin titulo' }}</h3>
+          <h3>{{ news.title || 'Sin título' }}</h3>
           <p class="news-meta">
             {{ news.author || 'Fuente sin autor' }}
             <span *ngIf="news.publishedAt"> - {{ news.publishedAt | date : 'short' }}</span>
           </p>
-          <p>{{ news.description || news.content || 'Sin descripcion disponible.' }}</p>
+          <p>{{ news.description || news.content || 'Sin descripción disponible.' }}</p>
           <div class="news-actions mt-auto">
             <a *ngIf="news.url" class="btn btn-outline-secondary btn-sm" [href]="news.url" target="_blank">
               <i class="fa fa-arrow-up-right-from-square" aria-hidden="true"></i>
@@ -87,7 +87,7 @@
               type="button"
               class="btn btn-primary btn-sm"
               (click)="openAddToListModal(news)"
-              [disabled]="!canAddNewsToReadingList(news)"
+              [disabled]="!canOpenAddToListModal(news)"
             >
               <i class="fa fa-bookmark" aria-hidden="true"></i>
               {{ addingNewsUrl === news.url ? 'Guardando...' : 'Agregar a lista' }}
@@ -102,13 +102,13 @@
     <div class="section-heading">
       <div>
         <span class="tp-kicker">Listas de lectura</span>
-        <h2>Gestion de listas</h2>
+        <h2>Gestión de listas</h2>
       </div>
       <span class="badge text-bg-light">Requisitos 2, 3 y 4</span>
     </div>
 
     <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
-      Inicia sesion para crear listas, editarlas y guardar noticias.
+      Inicia sesión para crear listas, editarlas y guardar noticias.
     </div>
 
     <form *ngIf="hasLoggedIn" class="reading-list-form" (ngSubmit)="createReadingList()">
@@ -232,7 +232,7 @@
     </div>
 
     <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
-      Inicia sesion para crear alertas.
+      Inicia sesión para crear alertas.
     </div>
 
     <form *ngIf="hasLoggedIn" class="reading-list-form" (ngSubmit)="createNewsAlert()">
@@ -250,7 +250,7 @@
 
       <button type="button" class="btn btn-outline-secondary" (click)="useCurrentSearchForAlert()">
         <i class="fa fa-arrow-right" aria-hidden="true"></i>
-        Usar busqueda actual
+        Usar búsqueda actual
       </button>
 
       <button type="submit" class="btn btn-primary" [disabled]="isCreatingAlert">
@@ -268,7 +268,7 @@
 
     <div *ngIf="hasLoggedIn && !createdAlerts.length" class="empty-state">
       <i class="fa fa-bell" aria-hidden="true"></i>
-      No hay alertas creadas en esta sesion.
+      No hay alertas creadas en esta sesión.
     </div>
 
     <div *ngIf="hasLoggedIn && createdAlerts.length" class="d-grid gap-2">
@@ -278,11 +278,11 @@
             <h3 class="h5 mb-1">{{ alert.searchText }}</h3>
             <p class="mb-0 text-muted">
               {{ alert.isActive ? 'Activa' : 'Inactiva' }}
-              <span *ngIf="alert.lastRunTime"> - ultima ejecucion: {{ alert.lastRunTime | date : 'short' }}</span>
+              <span *ngIf="alert.lastRunTime"> - última ejecución: {{ alert.lastRunTime | date : 'short' }}</span>
             </p>
           </div>
           <span class="badge text-bg-secondary">
-            {{ alert.notifications?.length || 0 }} notificacion(es)
+            {{ alert.notifications?.length || 0 }} notificación(es)
           </span>
         </div>
       </article>
@@ -292,14 +292,14 @@
   <section class="tp-section mt-3">
     <div class="section-heading">
       <div>
-        <span class="tp-kicker">Notificaciones</span>
-        <h2>Area de notificacion</h2>
+        <span class="tp-kicker">Área de notificación</span>
+        <h2>Notificaciones persistidas</h2>
       </div>
       <span class="badge text-bg-light">Requisitos 6 y 7</span>
     </div>
 
     <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
-      Inicia sesion para consultar notificaciones y ejecutar alertas.
+      Inicia sesión para consultar notificaciones y ejecutar alertas.
     </div>
 
     <div *ngIf="hasLoggedIn" class="d-flex flex-wrap gap-2 my-3">
@@ -310,7 +310,7 @@
         [disabled]="isLoadingNotifications || isRunningAlerts"
       >
         <i class="fa fa-rotate" aria-hidden="true"></i>
-        {{ isLoadingNotifications ? 'Consultando...' : 'Consultar persistidas' }}
+        {{ isLoadingNotifications ? 'Consultando...' : 'Consultar notificaciones' }}
       </button>
 
       <button
@@ -340,15 +340,14 @@
       <article *ngFor="let notification of notifications; trackBy: trackNotification" class="border rounded p-3">
         <div class="d-flex flex-wrap align-items-start justify-content-between gap-2">
           <div>
-            <h3 class="h6 mb-1">{{ notification.title || 'Notificacion sin titulo' }}</h3>
+            <h3 class="h6 mb-1">{{ notification.title || 'Notificación sin título' }}</h3>
             <p class="mb-0 text-muted">
               {{ notification.createdAt | date : 'short' }}
-              <span *ngIf="notification.alertId"> - alerta {{ notification.alertId }}</span>
             </p>
           </div>
 
           <span class="badge" [ngClass]="notification.isRead ? 'text-bg-secondary' : 'text-bg-primary'">
-            {{ notification.isRead ? 'Leida' : 'No leida' }}
+            {{ notification.isRead ? 'Leída' : 'No leída' }}
           </span>
         </div>
 

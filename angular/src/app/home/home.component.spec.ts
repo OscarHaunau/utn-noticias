@@ -176,6 +176,21 @@ describe('HomeComponent', () => {
     expect(fixture.componentInstance.selectedModalReadingListId).toBe('list-1');
   });
 
+  it('should open the add-to-list modal even when there are no reading lists', () => {
+    isAuthenticated = true;
+    const news = {
+      title: 'Titulo',
+      url: 'https://example.test/news',
+    };
+    fixture.componentInstance.readingLists = [];
+
+    expect(fixture.componentInstance.canOpenAddToListModal(news)).toBeTrue();
+    fixture.componentInstance.openAddToListModal(news);
+
+    expect(fixture.componentInstance.newsPendingToAdd).toEqual(news);
+    expect(fixture.componentInstance.selectedModalReadingListId).toBe('');
+  });
+
   it('should add a searched news item to the list selected in the modal', async () => {
     isAuthenticated = true;
     const news = {
@@ -235,14 +250,14 @@ describe('HomeComponent', () => {
       },
     ];
 
-    expect(fixture.componentInstance.canAddNewsToReadingList(news)).toBeTrue();
+    expect(fixture.componentInstance.canOpenAddToListModal(news)).toBeTrue();
     fixture.componentInstance.openAddToListModal(news);
     fixture.componentInstance.selectedModalReadingListId = '';
 
     await fixture.componentInstance.confirmAddNewsToReadingList();
 
     expect(mockTpBackendClient.addItemToReadingList).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.readingListErrorMessage).toContain('Elegí una lista destino');
+    expect(fixture.componentInstance.readingListErrorMessage).toContain('Selecciona una lista destino');
   });
 
   it('should copy current search text to the alert form', () => {
@@ -335,6 +350,6 @@ describe('HomeComponent', () => {
     await fixture.componentInstance.loadNotifications();
 
     expect(mockTpBackendClient.getMyNotifications).not.toHaveBeenCalled();
-    expect(fixture.componentInstance.notificationsErrorMessage).toContain('Inicia sesion');
+    expect(fixture.componentInstance.notificationsErrorMessage).toContain('Inicia sesión');
   });
 });

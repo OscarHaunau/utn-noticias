@@ -76,7 +76,7 @@ export class HomeComponent implements OnInit {
     try {
       this.newsResults = await this.tpBackendClient.searchNews(query);
       this.closeAddToListModal();
-      this.statusMessage = `Busqueda finalizada: ${this.newsResults.length} resultado(s).`;
+      this.statusMessage = `Búsqueda finalizada: ${this.newsResults.length} resultado(s).`;
     } catch (error) {
       this.setError(this.getErrorMessage(error));
     } finally {
@@ -207,10 +207,9 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  canAddNewsToReadingList(news: NewsDto): boolean {
+  canOpenAddToListModal(news: NewsDto): boolean {
     return Boolean(
       this.hasLoggedIn &&
-        this.readingLists.length &&
         news.title?.trim() &&
         news.url?.trim() &&
         !this.addingNewsUrl,
@@ -223,7 +222,7 @@ export class HomeComponent implements OnInit {
     }
 
     if (!news.title?.trim() || !news.url?.trim()) {
-      this.setReadingListError('La noticia necesita titulo y url para guardarse.');
+      this.setReadingListError('La noticia necesita título y URL para guardarse.');
       return;
     }
 
@@ -243,7 +242,7 @@ export class HomeComponent implements OnInit {
     }
 
     if (!this.selectedModalReadingListId) {
-      this.setReadingListError('Elegí una lista destino para guardar la noticia.');
+      this.setReadingListError('Selecciona una lista destino para guardar la noticia.');
       return;
     }
 
@@ -328,7 +327,7 @@ export class HomeComponent implements OnInit {
     try {
       const savedCount = await this.tpBackendClient.runAlerts();
       await this.refreshNotifications();
-      this.notificationsStatusMessage = `Ejecucion finalizada: ${savedCount} notificacion(es) nueva(s) persistida(s).`;
+      this.notificationsStatusMessage = `Ejecución finalizada: ${savedCount} notificación(es) nueva(s) persistida(s).`;
     } catch (error) {
       this.setNotificationsError(this.getErrorMessage(error));
     } finally {
@@ -376,7 +375,7 @@ export class HomeComponent implements OnInit {
       return true;
     }
 
-    this.setReadingListError('Inicia sesion para trabajar con listas de lectura.');
+    this.setReadingListError('Inicia sesión para trabajar con listas de lectura.');
     return false;
   }
 
@@ -385,7 +384,7 @@ export class HomeComponent implements OnInit {
       return true;
     }
 
-    this.setAlertError('Inicia sesion para crear alertas.');
+    this.setAlertError('Inicia sesión para crear alertas.');
     return false;
   }
 
@@ -394,7 +393,7 @@ export class HomeComponent implements OnInit {
       return true;
     }
 
-    this.setNotificationsError('Inicia sesion para consultar o ejecutar alertas.');
+    this.setNotificationsError('Inicia sesión para consultar o ejecutar alertas.');
     return false;
   }
 
@@ -462,13 +461,13 @@ export class HomeComponent implements OnInit {
     };
 
     if (err.status === 401) {
-      return 'No estas autenticado. Inicia sesion y proba nuevamente.';
+      return 'No estás autenticado. Inicia sesión y probá nuevamente.';
     }
 
     if (err.status === 403) {
-      return 'Tu usuario no tiene permisos para esta operacion.';
+      return 'Tu usuario no tiene permisos para esta operación.';
     }
 
-    return err.error?.error?.message || err.error?.message || err.message || 'Ocurrio un error inesperado.';
+    return err.error?.error?.message || err.error?.message || err.message || 'Ocurrió un error inesperado.';
   }
 }
