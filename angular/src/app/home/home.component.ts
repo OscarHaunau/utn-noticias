@@ -2,6 +2,7 @@ import { AuthService } from '@abp/ng.core';
 import { Component, OnInit } from '@angular/core';
 import {
   AddReadingListItemDto,
+  NewsAlertDto,
   NewsDto,
   ReadingListDto,
   TpBackendClientService,
@@ -31,6 +32,11 @@ export class HomeComponent implements OnInit {
   addingNewsUrl = '';
   readingListStatusMessage = '';
   readingListErrorMessage = '';
+  alertSearchText = '';
+  createdAlerts: NewsAlertDto[] = [];
+  isCreatingAlert = false;
+  alertStatusMessage = '';
+  alertErrorMessage = '';
 
   get hasLoggedIn(): boolean {
     return this.authService.isAuthenticated;
@@ -81,6 +87,10 @@ export class HomeComponent implements OnInit {
 
   trackReadingListItem(index: number, item: { id?: string; url?: string; title?: string }): string {
     return item.id || item.url || `${item.title}-${index}`;
+  }
+
+  trackAlert(index: number, item: NewsAlertDto): string {
+    return item.id || `${item.searchText}-${index}`;
   }
 
   async loadReadingLists(): Promise<void> {
@@ -246,6 +256,38 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  useCurrentSearchForAlert(): void {
+    this.alertSearchText = this.searchQuery.trim();
+    this.clearAlertMessages();
+  }
+
+  async createNewsAlert(): Promise<void> {
+    const searchText = this.alertSearchText.trim();
+
+    if (!searchText) {
+      this.setAlertError('Ingresa un texto para crear la alerta.');
+      return;
+    }
+
+    if (!this.ensureAuthenticatedForAlerts()) {
+      return;
+    }
+
+    this.isCreatingAlert = true;
+    this.clearAlertMessages();
+
+    try {
+      const created = await this.tpBackendClient.createNewsAlert(searchText);
+      this.createdAlerts = [this.normalizeNewsAlert(created), ...this.createdAlerts];
+      this.alertSearchText = '';
+      this.alertStatusMessage = `Alerta "${created.searchText}" creada.`;
+    } catch (error) {
+      this.setAlertError(this.getErrorMessage(error));
+    } finally {
+      this.isCreatingAlert = false;
+    }
+  }
+
   private setError(message: string): void {
     this.errorMessage = message;
     this.statusMessage = '';
@@ -261,12 +303,31 @@ export class HomeComponent implements OnInit {
     this.readingListStatusMessage = '';
   }
 
+  private setAlertError(message: string): void {
+    this.alertErrorMessage = message;
+    this.alertStatusMessage = '';
+  }
+
+  private clearAlertMessages(): void {
+    this.alertErrorMessage = '';
+    this.alertStatusMessage = '';
+  }
+
   private ensureAuthenticatedForReadingLists(): boolean {
     if (this.hasLoggedIn) {
       return true;
     }
 
     this.setReadingListError('Inicia sesion para trabajar con listas de lectura.');
+    return false;
+  }
+
+  private ensureAuthenticatedForAlerts(): boolean {
+    if (this.hasLoggedIn) {
+      return true;
+    }
+
+    this.setAlertError('Inicia sesion para crear alertas.');
     return false;
   }
 
@@ -301,6 +362,13 @@ export class HomeComponent implements OnInit {
     ) {
       this.selectedModalReadingListId = this.readingLists[0]?.id || '';
     }
+  }
+
+  private normalizeNewsAlert(alert: NewsAlertDto): NewsAlertDto {
+    return {
+      ...alert,
+      notifications: alert.notifications || [],
+    };
   }
 
   private toReadingListItemInput(news: NewsDto): AddReadingListItemDto {

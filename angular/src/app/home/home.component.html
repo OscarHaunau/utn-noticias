@@ -216,6 +216,73 @@
     </div>
   </section>
 
+  <section class="tp-section mt-3">
+    <div class="section-heading">
+      <div>
+        <span class="tp-kicker">Alertas</span>
+        <h2>Crear alerta de noticias</h2>
+      </div>
+      <span class="badge text-bg-light">Requisito 5</span>
+    </div>
+
+    <div *ngIf="!hasLoggedIn" class="alert alert-warning mt-3" role="alert">
+      Inicia sesion para crear alertas.
+    </div>
+
+    <form *ngIf="hasLoggedIn" class="reading-list-form" (ngSubmit)="createNewsAlert()">
+      <div>
+        <label class="form-label" for="alertSearchText">Texto de alerta</label>
+        <input
+          id="alertSearchText"
+          name="alertSearchText"
+          class="form-control"
+          type="text"
+          [(ngModel)]="alertSearchText"
+          placeholder="Ej: bitcoin"
+        />
+      </div>
+
+      <button type="button" class="btn btn-outline-secondary" (click)="useCurrentSearchForAlert()">
+        <i class="fa fa-arrow-right" aria-hidden="true"></i>
+        Usar busqueda actual
+      </button>
+
+      <button type="submit" class="btn btn-primary" [disabled]="isCreatingAlert">
+        <i class="fa fa-bell" aria-hidden="true"></i>
+        {{ isCreatingAlert ? 'Creando...' : 'Crear alerta' }}
+      </button>
+    </form>
+
+    <div *ngIf="alertStatusMessage" class="alert alert-success" role="status">
+      {{ alertStatusMessage }}
+    </div>
+    <div *ngIf="alertErrorMessage" class="alert alert-danger" role="alert">
+      {{ alertErrorMessage }}
+    </div>
+
+    <div *ngIf="hasLoggedIn && !createdAlerts.length" class="empty-state">
+      <i class="fa fa-bell" aria-hidden="true"></i>
+      No hay alertas creadas en esta sesion.
+    </div>
+
+    <div *ngIf="hasLoggedIn && createdAlerts.length" class="d-grid gap-2">
+      <article *ngFor="let alert of createdAlerts; trackBy: trackAlert" class="border rounded p-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div>
+            <h3 class="h5 mb-1">{{ alert.searchText }}</h3>
+            <p class="mb-0 text-muted">
+              {{ alert.isActive ? 'Activa' : 'Inactiva' }}
+              <span *ngIf="alert.lastRunTime"> - ultima ejecucion: {{ alert.lastRunTime | date : 'short' }}</span>
+            </p>
+          </div>
+          <span class="badge text-bg-secondary">
+            {{ alert.notifications?.length || 0 }} notificacion(es)
+          </span>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <div *ngIf="newsPendingToAdd" class="tp-modal-backdrop" role="presentation">
     <section class="tp-modal" role="dialog" aria-modal="true" aria-labelledby="addToListTitle">
       <header class="d-flex align-items-center justify-content-between gap-3">

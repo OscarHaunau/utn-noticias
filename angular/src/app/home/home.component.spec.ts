@@ -16,6 +16,7 @@ describe('HomeComponent', () => {
     'updateReadingList',
     'deleteReadingList',
     'addItemToReadingList',
+    'createNewsAlert',
   ]);
 
   beforeEach(
@@ -51,6 +52,7 @@ describe('HomeComponent', () => {
     mockTpBackendClient.updateReadingList.calls.reset();
     mockTpBackendClient.deleteReadingList.calls.reset();
     mockTpBackendClient.addItemToReadingList.calls.reset();
+    mockTpBackendClient.createNewsAlert.calls.reset();
     fixture = TestBed.createComponent(HomeComponent);
     fixture.detectChanges();
   });
@@ -237,5 +239,40 @@ describe('HomeComponent', () => {
 
     expect(mockTpBackendClient.addItemToReadingList).not.toHaveBeenCalled();
     expect(fixture.componentInstance.readingListErrorMessage).toContain('Elegí una lista destino');
+  });
+
+  it('should copy current search text to the alert form', () => {
+    fixture.componentInstance.searchQuery = ' bitcoin ';
+
+    fixture.componentInstance.useCurrentSearchForAlert();
+
+    expect(fixture.componentInstance.alertSearchText).toBe('bitcoin');
+  });
+
+  it('should create a news alert for authenticated users', async () => {
+    isAuthenticated = true;
+    mockTpBackendClient.createNewsAlert.and.resolveTo({
+      id: 'alert-1',
+      searchText: 'bitcoin',
+      isActive: true,
+      notifications: [],
+    });
+
+    fixture.componentInstance.alertSearchText = ' bitcoin ';
+    await fixture.componentInstance.createNewsAlert();
+
+    expect(mockTpBackendClient.createNewsAlert).toHaveBeenCalledOnceWith('bitcoin');
+    expect(fixture.componentInstance.createdAlerts[0].id).toBe('alert-1');
+    expect(fixture.componentInstance.alertSearchText).toBe('');
+  });
+
+  it('should not create a news alert with empty search text', async () => {
+    isAuthenticated = true;
+    fixture.componentInstance.alertSearchText = '   ';
+
+    await fixture.componentInstance.createNewsAlert();
+
+    expect(mockTpBackendClient.createNewsAlert).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.alertErrorMessage).toContain('Ingresa un texto');
   });
 });
